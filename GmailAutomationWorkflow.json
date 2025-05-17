@@ -1,0 +1,441 @@
+{
+  "name": "Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "id": "deba327c-9af8-48c9-bc15-88be23ac0c77",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        128.75
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {
+          "includeSpamTrash": true,
+          "readStatus": "unread"
+        }
+      },
+      "id": "e87e2718-ea69-4b98-9007-062d529b6a37",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        128.75
+      ],
+      "webhookId": "889a20f0-4aad-449b-a791-3032c8245dee",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "nnSVmDYpF4ZGsVUJ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "id": "d0f77c21-13ff-425d-9468-d33b850ef95d",
+      "name": "Parse mail",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -45
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "trash",
+        "threadId": "={{ $json.output.output.ThreadID }}"
+      },
+      "id": "361b41e8-91a7-4b53-87f0-a27b3e709aaa",
+      "name": "Trash Message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        900,
+        -120
+      ],
+      "webhookId": "0d6939a2-bf86-4cd2-ae6d-9bb20c14ff49",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "nnSVmDYpF4ZGsVUJ",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"EmailAction\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"EmailType\": {\n      \"type\": \"string\",\n      \"description\": \"Type of the email, e.g., Promo or Non-Promo\"\n    },\n    \"Action\": {\n      \"type\": \"string\",\n      \"description\": \"Action to be taken, e.g., ignore, read, delete\"\n    },\n    \"MessageID\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the message\"\n    },\n    \"ThreadID\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the thread\"\n    },\n    \"Reason\": {\n      \"type\": \"string\",\n      \"description\": \"Reason for the answer\"\n    }\n  },\n  \"required\": [\"EmailType\", \"Action\", \"MessageID\", \"ThreadID\",\"Reason\"],\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        412,
+        370
+      ],
+      "id": "c821c489-3aa3-4c1f-9a74-a46132fb2439",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        304,
+        175
+      ],
+      "id": "97a8e9f2-f14a-4640-bbcc-2b2247209a70",
+      "name": "Auto-fixing Output Parser"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        78.75
+      ],
+      "id": "3738d6a3-9740-44bb-8856-4a62b2e438f0"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {
+          "format": "json"
+        }
+      },
+      "id": "ae70f757-b0c5-46e2-bb0d-69985a0496a7",
+      "name": "Qwen3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        244,
+        370
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "nao0OZkMbtv73Dzo",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        128.75
+      ],
+      "id": "43f062a7-af6f-406c-beb7-1749d38776db",
+      "name": "Loop Over Items",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5b9d9dc2-54f8-4c1a-932a-b7f3d85ddf5c",
+              "leftValue": "={{ $json.output.output.Action }}",
+              "rightValue": "delete",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        680,
+        -45
+      ],
+      "id": "83908d5d-0ebc-4359-b22b-f720422dbd50",
+      "name": "Is Delete?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9a1224cb-57fe-4fa1-929d-cebf98281881",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "87518f7b-94d3-4dc5-81f7-b369bf6fd4a2",
+              "leftValue": "={{ $json.labels[0].id }}",
+              "rightValue": "TRASH",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -440,
+        128.75
+      ],
+      "id": "3388be87-fad5-4e30-a8d6-f057e8e4ba90",
+      "name": "is Empty?"
+    },
+    {
+      "parameters": {
+        "agent": "reActAgent",
+        "text": "=**Prompt:**\n\nAnalyze the content of the provided email and classify it as either **promotional** or **non-promotional (spam)**. Return the result as a **raw JSON object only** — no other text, no metadata, no explanations.\n\nAnalyse the email content:\n\n```json\n{\n  \"Body\": {{ $json.snippet }},\n  \"From\": {{ $json.From }},\n  \"Subject\": {{ $json.Subject }},\n  \"id\": {{ $json.id }},\n  \"ThreadID\": {{ $json.threadId }}\n}\n```\n\nRespond with well-unified JSON object  with following fields:\n\n{\n  \"EmailType\": \"Promo\" | \"Non-Promo\" | \"Spam\" | \"Phising\" | \"General\",\n  \"Action\": \"delete\" | \"ignore\",\n  \"MessageID\": \"{{ $json.id }}\",\n  \"ThreadID\": \"{{ $json.threadId }}\"\n  \"Reason\": Explain your answer\n}\n\nResponse should not contain reasesing <think>..</think> and DO NOT MAKE THINGS UP\n---\n\n**Key Factors for Analysis:**\n\n* Sender Information\n* Subject Line\n* Content\n* Links/Attachments\n* Personalization\n* Requests\n\n**Guidelines for Classification:**\n\nEmails You Can Safely Ignore/Delete:\nConfirmation emails (already outdated)\n\nLogin/security alerts (e.g., Google, courier notifications)\n\nRSVP/invitation confirmations (just noise after responding)\n\nRedundant messages (same info is in the app/website, e.g., PayPal)\n\nNewsletters (often stale by the time you read them)\n\nOld travel itineraries (unless you’re still on the trip—keep the photos instead!)\n\nAuto-replies (no action needed)\n\n* Mark as **Promo** if from a trusted sender and clearly promotional (e.g., store discounts, product offers).\n\n                    or\n\n* Mark as **Non-Promo** if it’s a group update, informational, \n                    \n                    or\n\n* Mark as **Non-Promo** if its suspicious/spammy content.\n\n**Action:**\n\n\"ignore\" if EmailType is \"Non-Promo\" | \"General\"\n           \nor\n\n\"delete\" if EmailType is \"Promo\" | \"Spam\" | \"Phising\" \n\nThis version avoids reasoning thinking output and enforces strict JSON-only responses. Let me know if you want to embed constraints like JSON schema validation or enforce stricter keyword presence checks.\n",
+        "options": {}
+      },
+      "id": "091f613f-8874-4f91-9172-33422e367c23",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -45
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-05-15T14:59:38.403+12:00",
+          "Readable date": "May 15th 2025, 2:59:38 pm",
+          "Readable time": "2:59:38 pm",
+          "Day of week": "Thursday",
+          "Year": "2025",
+          "Month": "May",
+          "Day of month": "15",
+          "Hour": "14",
+          "Minute": "59",
+          "Second": "38",
+          "Timezone": "Pacific/Auckland (UTC+12:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "is Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse mail": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trash Message": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qwen3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Parse mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Delete?": {
+      "main": [
+        [
+          {
+            "node": "Trash Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is Empty?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Is Delete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Pacific/Auckland",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 20
+  },
+  "versionId": "cd4bbd24-1d68-40df-a043-45908de4b5fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee24c5f4ce16fc39f5b7d44c1395b5669fe05dd309484bbbd3e53e63af8c6134"
+  },
+  "id": "nWy04Hq0JbaiCCGf",
+  "tags": []
+}
