@@ -102,10 +102,13 @@ sequenceDiagram
 ## Getting Started
 
 ### Prerequisites
-- **Server**: Linux VPS (2GB+ RAM, Docker).
-- **Accounts**:
-  - Gmail (with IMAP/API access).
+- **Server**:
+  - Docker + n8n
   - Ollama (local or server install).
+    - Qwen3:4B model
+- **Accounts**:
+  - Gmail (with oAuth API access).
+
 
 ### Deployment
 1. **Install Ollama**:
