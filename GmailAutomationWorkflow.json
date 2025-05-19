@@ -35,7 +35,7 @@
       "typeVersion": 2,
       "position": [
         -660,
-        128.75
+        120
       ],
       "webhookId": "889a20f0-4aad-449b-a791-3032c8245dee",
       "alwaysOutputData": true,
@@ -189,10 +189,27 @@
       "typeVersion": 2.2,
       "position": [
         680,
-        -45
+        -40
       ],
       "id": "83908d5d-0ebc-4359-b22b-f720422dbd50",
       "name": "Is Delete?"
+    },
+    {
+      "parameters": {
+        "agent": "reActAgent",
+        "text": "=**Prompt:**\n\nAnalyze the content of the provided email and classify it as either **promotional** or **non-promotional (spam)**. Return the result as a **raw JSON object only** — no other text, no metadata, no explanations.\n\nAnalyse the email content:\n\n```json\n{\n  \"Body\": {{ $json.snippet }},\n  \"From\": {{ $json.From }},\n  \"Subject\": {{ $json.Subject }},\n  \"id\": {{ $json.id }},\n  \"ThreadID\": {{ $json.threadId }}\n}\n```\n\nRespond with well-unified JSON object  with following fields:\n\n{\n  \"EmailType\": \"Promo\" | \"Spam\" | \"Phishing\" | \"General\",\n  \"Action\": \"delete\" | \"ignore\",\n  \"MessageID\": \"{{ $json.id }}\",\n  \"ThreadID\": \"{{ $json.threadId }}\"\n  \"Reason\": Explain your answer\n}\n\nResponse should not contain reasesing <think>..</think> and DO NOT MAKE THINGS UP\n---\n\n**Key Factors for Analysis:**\n\n* Sender Information\n* Subject Line\n* Content\n* Links/Attachments\n* Personalization\n* Requests\n\n**Guidelines for Classification:**\n\nEmails You Can Safely Ignore/Delete:\n\n1. Confirmation emails (already outdated)\n2. Login/security alerts (e.g., Google, courier notifications)\n3. RSVP/invitation confirmations (just noise after responding)\n4. Redundant messages (same info is in the app/website, e.g., PayPal)\n5. Newsletters (often stale by the time you read them)\n6. Old travel itineraries (unless you’re still on the trip—keep the photos instead!)\n7. Auto-replies (no action needed)\n\n* Mark as \"Promo\" if from a trusted sender and clearly promotional (e.g., store discounts, product offers).\n\n                    or\n\n* Mark as \"General\" if it’s a group update, informational, \n                    \n                    or\n\n* Mark as \"Spam\" if its suspicious/spammy content.\n\n**Action:**\n\n\"ignore\" if EmailType is \"Non-Promo\" | \"General\"\n           \nor\n\n\"delete\" if EmailType is \"Promo\" | \"Spam\" | \"Phishing\" \n\nThis version avoids reasoning thinking output and enforces strict JSON-only responses. Let me know if you want to embed constraints like JSON schema validation or enforce stricter keyword presence checks.\n",
+        "options": {}
+      },
+      "id": "091f613f-8874-4f91-9172-33422e367c23",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -45
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
     },
     {
       "parameters": {
@@ -238,24 +255,7 @@
         128.75
       ],
       "id": "3388be87-fad5-4e30-a8d6-f057e8e4ba90",
-      "name": "is Empty?"
-    },
-    {
-      "parameters": {
-        "agent": "reActAgent",
-        "text": "=**Prompt:**\n\nAnalyze the content of the provided email and classify it as either **promotional** or **non-promotional (spam)**. Return the result as a **raw JSON object only** — no other text, no metadata, no explanations.\n\nAnalyse the email content:\n\n```json\n{\n  \"Body\": {{ $json.snippet }},\n  \"From\": {{ $json.From }},\n  \"Subject\": {{ $json.Subject }},\n  \"id\": {{ $json.id }},\n  \"ThreadID\": {{ $json.threadId }}\n}\n```\n\nRespond with well-unified JSON object  with following fields:\n\n{\n  \"EmailType\": \"Promo\" | \"Non-Promo\" | \"Spam\" | \"Phising\" | \"General\",\n  \"Action\": \"delete\" | \"ignore\",\n  \"MessageID\": \"{{ $json.id }}\",\n  \"ThreadID\": \"{{ $json.threadId }}\"\n  \"Reason\": Explain your answer\n}\n\nResponse should not contain reasesing <think>..</think> and DO NOT MAKE THINGS UP\n---\n\n**Key Factors for Analysis:**\n\n* Sender Information\n* Subject Line\n* Content\n* Links/Attachments\n* Personalization\n* Requests\n\n**Guidelines for Classification:**\n\nEmails You Can Safely Ignore/Delete:\nConfirmation emails (already outdated)\n\nLogin/security alerts (e.g., Google, courier notifications)\n\nRSVP/invitation confirmations (just noise after responding)\n\nRedundant messages (same info is in the app/website, e.g., PayPal)\n\nNewsletters (often stale by the time you read them)\n\nOld travel itineraries (unless you’re still on the trip—keep the photos instead!)\n\nAuto-replies (no action needed)\n\n* Mark as **Promo** if from a trusted sender and clearly promotional (e.g., store discounts, product offers).\n\n                    or\n\n* Mark as **Non-Promo** if it’s a group update, informational, \n                    \n                    or\n\n* Mark as **Non-Promo** if its suspicious/spammy content.\n\n**Action:**\n\n\"ignore\" if EmailType is \"Non-Promo\" | \"General\"\n           \nor\n\n\"delete\" if EmailType is \"Promo\" | \"Spam\" | \"Phising\" \n\nThis version avoids reasoning thinking output and enforces strict JSON-only responses. Let me know if you want to embed constraints like JSON schema validation or enforce stricter keyword presence checks.\n",
-        "options": {}
-      },
-      "id": "091f613f-8874-4f91-9172-33422e367c23",
-      "name": "AI Agent",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1,
-      "position": [
-        220,
-        -45
-      ],
-      "alwaysOutputData": true,
-      "executeOnce": true
+      "name": "not null?"
     }
   ],
   "pinData": {
@@ -293,7 +293,7 @@
       "main": [
         [
           {
-            "node": "is Empty?",
+            "node": "not null?",
             "type": "main",
             "index": 0
           }
@@ -401,22 +401,22 @@
         ]
       ]
     },
-    "is Empty?": {
+    "AI Agent": {
       "main": [
         [
           {
-            "node": "Loop Over Items",
+            "node": "Is Delete?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent": {
+    "not null?": {
       "main": [
         [
           {
-            "node": "Is Delete?",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -429,9 +429,9 @@
     "executionOrder": "v1",
     "timezone": "Pacific/Auckland",
     "callerPolicy": "workflowsFromSameOwner",
-    "timeSavedPerExecution": 20
+    "timeSavedPerExecution": 30
   },
-  "versionId": "cd4bbd24-1d68-40df-a043-45908de4b5fd",
+  "versionId": "d06ee61d-9da4-4ddd-ad28-0bba4b8e0380",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ee24c5f4ce16fc39f5b7d44c1395b5669fe05dd309484bbbd3e53e63af8c6134"
